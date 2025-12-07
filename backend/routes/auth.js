@@ -2,7 +2,7 @@ import express from "express";
 import { signup, login } from "../controllers/authController.js";
 import University from "../models/University.js";
 
-const router = express.Router();    // ✅ Router FIRST
+const router = express.Router();
 
 // Public universities list for students
 router.get("/universities-public", async (req, res) => {
@@ -17,4 +17,4 @@ router.get("/universities-public", async (req, res) => {
 router.post("/signup", signup);
 router.post("/login", login);
 
-export default router;
+export default router;   // ✅ THIS LINE MUST EXIST

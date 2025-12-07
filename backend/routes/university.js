@@ -24,9 +24,10 @@ router.post("/workshop", protect, permit("university"), async (req, res) => {
 
 // Fetch students belonging to this university (pending only)
 router.get("/students", protect, permit("university"), async (req, res) => {
+  console.log("REQ.USER =", req.user); 
   const students = await User.find({
     role: "student",
-    university: req.user._id,
+    universityId: req.user.universityId,
     approved: false
   });
 
