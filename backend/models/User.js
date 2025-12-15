@@ -5,11 +5,16 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
   role: { type: String, enum: ["admin", "university", "student"] },
-  approved: { type: Boolean, default: false },
 
-  universityId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "University" 
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending"
+  },
+
+  universityId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "University"
   }
 });
 

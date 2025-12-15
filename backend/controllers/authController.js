@@ -2,12 +2,15 @@ import User from "../models/User.js";
 import University from "../models/University.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Notification from "../models/Notification.js";
 
 const tokenGen = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
 
 // ✅ SIGNUP EXPORT
+// inside authController.js
+
 export const signup = async (req, res) => {
   try {
     const { name, email, password, role, universityName, universityId } = req.body;
@@ -17,40 +20,47 @@ export const signup = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const userData = {
+    const user = await User.create({
       name,
       email,
       password: hashed,
       role,
-      approved: false
-    };
+      status: "pending"
+    });
 
-    const user = await User.create(userData);
+    if (role === "university") {
+      const uni = await University.create({
+        name: universityName,
+        createdBy: user._id
+      });
 
+      user.universityId = uni._id;
+      await user.save();
 
-if (role === "university") {
-  const uni = await University.create({
-    name: universityName,
-    createdBy: user._id
-  });
-
-  userData.universityId = uni._id;
-}
-
-
-    // ✅ Student signup
-    if (role === "student") {
-      userData.universityId = universityId; 
+      // 🔔 Notify ALL admins
+      const admins = await User.find({ role: "admin" });
+      for (const admin of admins) {
+        await Notification.create({
+          user: admin._id,
+          title: "New University Request",
+          message: `${universityName} registered and is pending approval`
+        });
+      }
     }
 
-    
-    const token = tokenGen(user._id);
+    if (role === "student") {
+      user.universityId = universityId;
+      await user.save();
+    }
 
+    const token = tokenGen(user._id);
     res.json({ token, user });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 

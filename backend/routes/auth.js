@@ -1,6 +1,7 @@
 import express from "express";
 import { signup, login } from "../controllers/authController.js";
 import University from "../models/University.js";
+import User from "../models/User.js"; // ✅ ADD THIS LINE
 
 const router = express.Router();
 
@@ -14,7 +15,15 @@ router.get("/universities-public", async (req, res) => {
   }
 });
 
+// ✅ Email existence check
+router.post("/check-email", async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  res.json({ exists: !!user });
+});
+
+// Auth routes
 router.post("/signup", signup);
 router.post("/login", login);
 
-export default router;   // ✅ THIS LINE MUST EXIST
+export default router;
